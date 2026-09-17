@@ -15,10 +15,6 @@ namespace Purchase_Sales_Core.Services.ProductServices
 
         public async Task<Result<int>> UploadPurchaseData(PurchaseFileMetadataDTO purchaseFileDTO)
         {
-            // --- Validation ---
-            if (purchaseFileDTO.purchaseFile == null || purchaseFileDTO.purchaseFile.Length == 0)
-                return Result<int>.Fail(ErrorType.Invalid, "Purchase file is missing or empty.");
-
             int insertedProducts = 0;
 
             List<string> allProducts = await _getAllProducts.GetProductsNamesAsync();

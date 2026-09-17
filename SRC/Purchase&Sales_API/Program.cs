@@ -1,8 +1,12 @@
 
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Http.Features;
 using Purchase_Sales_API.ErrorHandlingMiddleware;
 using Purchase_Sales_Core.CoreDIContainer;
+using Purchase_Sales_Core.Validators;
 using Purchase_Sales_Infrastructure.InfrastructureDIContainer;
+
 namespace Purchase_Sales_API
 {
     public class Program
@@ -14,6 +18,11 @@ namespace Purchase_Sales_API
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            // FluentValidation — validators live in the Core project
+            builder.Services.AddFluentValidationAutoValidation();
+            builder.Services.AddValidatorsFromAssemblyContaining<PurchaseFileDTOValidator>();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

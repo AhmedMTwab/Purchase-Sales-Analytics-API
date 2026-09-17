@@ -17,10 +17,6 @@ namespace Purchase_Sales_Core.Services.SaleServices
 
         public async Task<Result<int>> UploadSaleData(SalesFileMetadataDTO saleFileDTO)
         {
-            // --- Validation ---
-            if (saleFileDTO.salesFile == null || saleFileDTO.salesFile.Length == 0)
-                return Result<int>.Fail(ErrorType.Invalid, "Sales file is missing or empty.");
-
             int insertedSales = 0;
             int totalSalesAdded = 0;
 
