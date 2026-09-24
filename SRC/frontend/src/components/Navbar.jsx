@@ -47,7 +47,7 @@ const Navbar = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}>
-              Gomla Market
+              P&S
             </span>
           </Link>
 

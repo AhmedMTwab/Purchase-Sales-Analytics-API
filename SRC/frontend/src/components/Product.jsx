@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { FiSearch, FiPackage, FiHash } from 'react-icons/fi';
 
-const API_BASE_URL = 'http://localhost:5198';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ;
 
 function Product() {
   const [productName, setProductName] = useState('');

@@ -1,0 +1,13 @@
+bin/
+obj/
+**/bin
+**/obj
+.env
+.git
+.vs
+.vscode
+*.user
+**/TestResults
+**/node_modules
+frontend/
+DOCKERIZATION_PLAN.md

@@ -82,11 +82,30 @@ This combination is what achieves the **1M rows in 0.35 seconds** benchmark.
 
 ## 📦 Getting Started
 
-### Prerequisites
+### Option 1 — Docker (recommended, zero setup)
+
+```bash
+git clone https://github.com/AhmedMTwab/Purchase-Sales-Analysis-Task.git
+cd Purchase-Sales-Analysis-Task
+cp .env.example .env   # then optionally edit SA_PASSWORD
+docker compose up --build
+```
+
+| Service | URL |
+|---|---|
+| React app | http://localhost:3000 |
+| API (Swagger) | http://localhost:8080/swagger |
+
+> First run takes ~30s while SQL Server initializes. Migrations apply automatically — no manual setup needed.
+
+### Option 2 — Manual
+
+#### Prerequisites
 - .NET 8 SDK
 - SQL Server (local or remote)
+- Node.js 20+
 
-### Setup
+#### Setup
 
 1. **Clone the repository**
    ```bash
@@ -105,14 +124,16 @@ This combination is what achieves the **1M rows in 0.35 seconds** benchmark.
 
    > **📌 Database Connection Note**: This application is connected to a deployed database, so you don't need to change the connection string. However, if the deployed database fails or you want to use your own database, you can update the connection string above.
 
-3. **Apply migrations**
-   ```bash
-   dotnet ef database update --project SRC/Purchase&Sales_Infrastructure
-   ```
-
-4. **Run the application**
+3. **Run the API** (migrations apply automatically on startup)
    ```bash
    dotnet run --project SRC/Purchase&Sales_API
+   ```
+
+4. **Run the React frontend**
+   ```bash
+   cd SRC/frontend
+   npm install
+   npm run dev
    ```
 
 5. **Open Swagger UI** at `https://localhost:5001` (or the port shown in your console)

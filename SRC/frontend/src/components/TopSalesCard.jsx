@@ -3,7 +3,7 @@ import axios from 'axios';
 import { FiTrendingUp } from 'react-icons/fi';
 import StatCard from './StatCard';
 
-const API_BASE_URL = 'http://localhost:5198';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const TopSalesCard = () => {
   const [topSales, setTopSales] = useState([]);

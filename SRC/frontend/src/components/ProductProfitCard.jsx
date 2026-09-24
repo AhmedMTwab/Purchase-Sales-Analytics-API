@@ -3,7 +3,7 @@ import axios from 'axios';
 import { FiDollarSign, FiSearch, FiBarChart2, FiArrowUp } from 'react-icons/fi';
 import StatCard from './StatCard';
 
-const API_BASE_URL = 'http://localhost:5198';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ;
 
 const ProductProfitCard = () => {
   const [productProfit, setProductProfit] = useState(null);
