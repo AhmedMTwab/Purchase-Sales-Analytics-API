@@ -133,6 +133,12 @@ flowchart LR
 
 ![Database Diagram](Purchase&SalesDiagram.png)
 
+### Background jobs
+
+The API hosts a Hangfire server backed by the configured `ApplicationDb` SQL Server database. Hangfire creates and manages its tables in the `HangFire` schema. CSV uploads are saved under `App_Data/HangfireUploads` and processed in the background; the Hangfire job ID is returned to the caller. Docker Compose mounts this directory as a persistent volume. The worker count, queues, dashboard path, upload directory, and storage schema can be changed in `SRC/Purchase&Sales_API/appsettings.json`.
+
+The Hangfire dashboard is available at `/hangfire` (or the configured dashboard path). Hangfire's default dashboard authorization permits local requests only; configure an authorization filter before exposing it to remote users. The server is ready to process jobs once the application enqueues or schedules them.
+
 ---
 
 ## 📚 API Endpoints

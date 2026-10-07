@@ -21,6 +21,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    volumes:
+      - uploads_data:/app/App_Data/HangfireUploads
     environment:
       ASPNETCORE_URLS: "http://+:8080"
       ASPNETCORE_ENVIRONMENT: "Development"
@@ -40,3 +42,4 @@ services:
 
 volumes:
   sql_data:
+  uploads_data:

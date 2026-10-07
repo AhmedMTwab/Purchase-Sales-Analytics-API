@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Hangfire;
+using Microsoft.AspNetCore.Mvc;
 using Purchase_Sales_Core;
+using Purchase_Sales_Core.DTOs.PurchaseDTO;
+using Purchase_Sales_Core.Helpers;
 using Purchase_Sales_Core.ServicesAbstractions.ProductServicesAbstractions;
 
 namespace Purchase_Sales_API.Controllers
@@ -7,27 +10,58 @@ namespace Purchase_Sales_API.Controllers
     [Route("api/upload/[controller]")]
     [ApiController]
     public class PurchaseController(
-        IUploadPurchaseAnalysisFromExcel _uploadPurchaseAnalysisFromExcel,
-        IUploadPurchaseAnalysisFromCsv _uploadPurchaseAnalysisFromCsv) : ControllerBase
+        IConfiguration configuration,
+        IWebHostEnvironment environment) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> UploadPurchases([FromForm] PurchaseFileMetadataDTO purchaseFileDTO)
         {
-            var ext = Path.GetExtension(purchaseFileDTO.purchaseFile?.FileName ?? string.Empty)
-                          .ToLowerInvariant();
+            var uploadedFile = purchaseFileDTO.purchaseFile;
+            if (uploadedFile is null || uploadedFile.Length == 0)
+                return BadRequest("Purchase file is required and must not be empty.");
 
-            Result<int> result = ext switch
+            var extension = Path.GetExtension(uploadedFile.FileName).ToLowerInvariant();
+            if (extension is not (".csv" or ".xlsx"))
+                return BadRequest("Unsupported file format. File must be .csv or .xlsx.");
+
+            var uploadDirectory = GetUploadDirectory();
+            Directory.CreateDirectory(uploadDirectory);
+            var filePath = Path.Combine(uploadDirectory, $"{Guid.NewGuid():N}{extension}");
+
+            await AttachmentsUploader.SaveJobFile(uploadedFile, filePath);
+
+            var job = new PurchaseFileJobDTO
             {
-                ".csv"  => await _uploadPurchaseAnalysisFromCsv.UploadPurchaseData(purchaseFileDTO),
-                ".xlsx" => await _uploadPurchaseAnalysisFromExcel.UploadPurchaseData(purchaseFileDTO),
-                _       => Result<int>.Fail(ErrorType.Invalid,
-                               "Unsupported file format. File must be .csv or .xlsx.")
+                filePath = filePath,
+                headerRow = purchaseFileDTO.headerRow,
+                productNameHeader = purchaseFileDTO.productNameHeader,
+                priceHeader = purchaseFileDTO.priceHeader
             };
 
-            if (result.IsSuccess)
-                return Ok($"{result.Value} Products added");
+            try
+            {
+                var jobId = extension == ".csv"
+                    ? BackgroundJob.Enqueue<IUploadPurchaseAnalysisFromCsv>(
+                        service => service.UploadPurchaseData(job))
+                    : BackgroundJob.Enqueue<IUploadPurchaseAnalysisFromExcel>(
+                        service => service.UploadPurchaseData(job));
 
-            return result.ToActionResult(this);
+                return Accepted(new { jobId, message = "Purchase upload queued for background processing." });
+            }
+            catch
+            {
+                System.IO.File.Delete(filePath);
+                throw;
+            }
+        }
+
+        private string GetUploadDirectory()
+        {
+            var configuredDirectory = configuration["Hangfire:UploadDirectory"]
+                ?? Path.Combine("App_Data", "HangfireUploads");
+            return Path.IsPathRooted(configuredDirectory)
+                ? configuredDirectory
+                : Path.Combine(environment.ContentRootPath, configuredDirectory);
         }
     }
 }

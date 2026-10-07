@@ -15,7 +15,7 @@ namespace Purchase_Sales_Core.Services.SaleServices
     {
         const int batchSize = constants.BatchSize;
 
-        public async Task<Result<int>> UploadSaleData(SalesFileMetadataDTO saleFileDTO)
+        public async Task<Result<int>> UploadSaleData(SalesFileJobDTO saleFileDTO)
         {
             int insertedSales = 0;
             int totalSalesAdded = 0;
@@ -63,15 +63,13 @@ namespace Purchase_Sales_Core.Services.SaleServices
             return headers;
         }
 
-        private async Task<Result<List<SaleAddDTO>>> ReadSales(SalesFileMetadataDTO saleFileDTO)
+        private async Task<Result<List<SaleAddDTO>>> ReadSales(SalesFileJobDTO saleFileDTO)
         {
             var salesToAdd = new List<SaleAddDTO>();
 
-            MemoryStream stream = new MemoryStream();
-            await saleFileDTO.salesFile.CopyToAsync(stream);
             ExcelPackage.License.SetNonCommercialPersonal("Eltwab");
 
-            using ExcelPackage excelpackage = new ExcelPackage(stream);
+            using ExcelPackage excelpackage = new ExcelPackage(new FileInfo(saleFileDTO.filePath));
             ExcelWorksheet worksheet = excelpackage.Workbook.Worksheets[0];
 
             // --- Validate headerRow is in range ---
