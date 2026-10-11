@@ -1,5 +1,6 @@
 using OfficeOpenXml;
 using Purchase_Sales_Core.DTOs.ProductDTO;
+using Purchase_Sales_Core.DTOs.PurchaseDTO;
 using Purchase_Sales_Core.ServicesAbstractions.ProductServicesAbstractions;
 using Purchase_Sales_Domain.Models;
 
@@ -13,7 +14,7 @@ namespace Purchase_Sales_Core.Services.ProductServices
     {
         const int batchSize = constants.BatchSize;
 
-        public async Task<Result<int>> UploadPurchaseData(PurchaseFileMetadataDTO purchaseFileDTO)
+        public async Task<Result<int>> UploadPurchaseData(PurchaseFileJobDTO purchaseFileDTO)
         {
             int insertedProducts = 0;
 
@@ -58,15 +59,13 @@ namespace Purchase_Sales_Core.Services.ProductServices
             return headers;
         }
 
-        private async Task<Result<List<ProductAddDTO>>> ReadPurchase(PurchaseFileMetadataDTO purchaseFileDTO)
+        private async Task<Result<List<ProductAddDTO>>> ReadPurchase(PurchaseFileJobDTO purchaseFileDTO)
         {
             var purchaseList = new List<ProductAddDTO>();
 
-            MemoryStream stream = new MemoryStream();
-            await purchaseFileDTO.purchaseFile.CopyToAsync(stream);
             ExcelPackage.License.SetNonCommercialPersonal("Eltwab");
 
-            using ExcelPackage excelpackage = new ExcelPackage(stream);
+            using ExcelPackage excelpackage = new ExcelPackage(new FileInfo(purchaseFileDTO.filePath));
             ExcelWorksheet worksheet = excelpackage.Workbook.Worksheets[0];
 
             // --- Validate headerRow is in range ---

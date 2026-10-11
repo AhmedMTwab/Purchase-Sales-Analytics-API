@@ -1,6 +1,8 @@
 
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Purchase_Sales_API.ErrorHandlingMiddleware;
@@ -20,6 +22,31 @@ namespace Purchase_Sales_API
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            var hangfireConnectionString = builder.Configuration.GetConnectionString("ApplicationDb")
+                ?? throw new InvalidOperationException("Connection string 'ApplicationDb' is not configured.");
+
+            builder.Services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(hangfireConnectionString, new SqlServerStorageOptions
+                {
+                    SchemaName = builder.Configuration["Hangfire:Storage:SchemaName"] ?? "HangFire",
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    DisableGlobalLocks = true
+                }));
+
+            builder.Services.AddHangfireServer(options =>
+            {
+                options.WorkerCount = builder.Configuration.GetValue<int?>("Hangfire:WorkerCount")
+                    ?? Math.Max(1, Environment.ProcessorCount * 5);
+                options.Queues = builder.Configuration.GetSection("Hangfire:Queues").Get<string[]>()
+                    ?? new[] { "default" };
+            });
 
             // FluentValidation — validators live in the Core project
             builder.Services.AddFluentValidationAutoValidation();
@@ -87,6 +114,9 @@ namespace Purchase_Sales_API
             app.UseCustomErrorHandlingMiddleware();
             app.UseCors();
             app.UseHttpsRedirection();
+
+            app.UseHangfireDashboard(
+                builder.Configuration["Hangfire:DashboardPath"] ?? "/hangfire");
 
             app.UseAuthorization();
 

@@ -2,6 +2,7 @@ using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Purchase_Sales_Core.DTOs.ProductDTO;
+using Purchase_Sales_Core.DTOs.PurchaseDTO;
 using Purchase_Sales_Core.ServicesAbstractions.ProductServicesAbstractions;
 using Purchase_Sales_Domain.Models;
 
@@ -15,7 +16,7 @@ namespace Purchase_Sales_Core.Services.ProductServices
     {
         const int batchSize = constants.BatchSize;
 
-        public async Task<Result<int>> UploadPurchaseData(PurchaseFileMetadataDTO purchaseFileDTO)
+        public async Task<Result<int>> UploadPurchaseData(PurchaseFileJobDTO purchaseFileDTO)
         {
             int insertedProducts = 0;
 
@@ -47,11 +48,11 @@ namespace Purchase_Sales_Core.Services.ProductServices
             return Result<int>.Ok(insertedProducts);
         }
 
-        private async Task<Result<List<ProductAddDTO>>> ReadPurchase(PurchaseFileMetadataDTO purchaseFileDTO)
+        private async Task<Result<List<ProductAddDTO>>> ReadPurchase(PurchaseFileJobDTO purchaseFileDTO)
         {
             var purchaseList = new List<ProductAddDTO>();
 
-            using var stream = purchaseFileDTO.purchaseFile.OpenReadStream();
+            using var stream = File.OpenRead(purchaseFileDTO.filePath);
             using var reader = new StreamReader(stream);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
             {

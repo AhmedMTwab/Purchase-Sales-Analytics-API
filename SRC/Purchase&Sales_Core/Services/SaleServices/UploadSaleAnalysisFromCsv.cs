@@ -16,7 +16,7 @@ namespace Purchase_Sales_Core.Services.SaleServices
     {
         const int batchSize = constants.BatchSize;
 
-        public async Task<Result<int>> UploadSaleData(SalesFileMetadataDTO saleFileDTO)
+        public async Task<Result<int>> UploadSaleData(SalesFileJobDTO saleFileDTO)
         {
             int insertedSales = 0;
             int totalSalesAdded = 0;
@@ -51,11 +51,11 @@ namespace Purchase_Sales_Core.Services.SaleServices
             return Result<int>.Ok(totalSalesAdded);
         }
 
-        private async Task<Result<List<SaleAddDTO>>> ReadSales(SalesFileMetadataDTO saleFileDTO)
+        private async Task<Result<List<SaleAddDTO>>> ReadSales(SalesFileJobDTO saleFileDTO)
         {
             var salesToAdd = new List<SaleAddDTO>();
 
-            using var stream = saleFileDTO.salesFile.OpenReadStream();
+            using var stream = File.OpenRead(saleFileDTO.filePath);
             using var reader = new StreamReader(stream);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
             {
